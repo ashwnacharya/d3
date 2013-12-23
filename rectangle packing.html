@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Rectangle packing</title>
+		<script type='text/javascript' src='http://code.jquery.com/jquery-1.10.2.min.js'></script>
+		<script type='text/javascript' src="scripts/d3.js"></script>
+		<script type='text/javascript'>
+
+		
+		
+
+		function submit() {
+
+			var scale = $('#txtScale').val();
+			
+			if(scale == '')
+			{
+				scale = 10;
+			}
+		
+			var breakdown = $('#txtBreakdown').val().split(',');
+			var sum = breakdown.reduce(function(prev, cur) { return parseInt(prev) + parseInt(cur); });
+
+			var ySize = scale * sum;
+
+			$('#drawing').empty();
+			
+			var svg = d3.select('#drawing').append('svg').attr('width',1800).attr('height', 1800);
+			
+			var rectangle = new Object();
+			rectangle.value = sum;
+			rectangle.x = 0;
+			rectangle.y = 0;
+			rectangle.width = sum * scale;
+			rectangle.height = sum * scale;
+
+			splitRectangle(svg, rectangle, breakdown, true);
+		}
+
+		function splitRectangle(svg, rectangle, breakdown, evenLevel) {
+
+			evenLevel = !evenLevel;
+
+			if(breakdown.length <= 1)
+			{
+				svg
+				.append('rect')
+				.attr('x',rectangle.x)
+				.attr('y', rectangle.y)
+				.attr('width',rectangle.width)
+				.attr('height', rectangle.height)
+				.attr('fill', get_random_color())
+				.attr('title', rectangle.value);
+				return;
+			}
+
+			var sum = breakdown.reduce(function(prev, cur) { return parseInt(prev) + parseInt(cur); });
+
+			var firstHalf = breakdown.slice(0,Math.floor(breakdown.length/2));
+			var secondHalf = breakdown.slice(Math.floor(breakdown.length/2), breakdown.length);
+
+
+			var firstHalfSum = firstHalf.reduce(function(prev, cur) { return parseInt(prev) + parseInt(cur); });
+			var secondHalfSum = secondHalf.reduce(function(prev, cur) { return parseInt(prev) + parseInt(cur); });
+
+			console.log(firstHalfSum);
+			console.log(secondHalfSum);
+
+			if(evenLevel)
+			{
+				var firstHalfHeight = (rectangle.height * firstHalfSum / sum);
+				var firstHalfWidth = rectangle.width;
+		
+				var secondHalfHeight = (rectangle.height * secondHalfSum / sum);
+				var secondHalfWidth = rectangle.width;
+				
+				var firstHalfRectangle = new Object();
+				firstHalfRectangle.value = firstHalfSum;
+				firstHalfRectangle.x = rectangle.x;
+				firstHalfRectangle.y = rectangle.y;
+				firstHalfRectangle.width = firstHalfWidth;
+				firstHalfRectangle.height = firstHalfHeight;
+				
+				var secondHalfRectangle = new Object();
+				secondHalfRectangle.value = secondHalfSum;
+				secondHalfRectangle.x = rectangle.x;
+				secondHalfRectangle.y = rectangle.y + firstHalfHeight;
+				secondHalfRectangle.width = secondHalfWidth;
+				secondHalfRectangle.height = secondHalfHeight;
+			
+				splitRectangle(svg, firstHalfRectangle, firstHalf, evenLevel);
+				splitRectangle(svg, secondHalfRectangle, secondHalf, evenLevel);
+				
+			}
+			else
+			{
+				var firstHalfHeight = rectangle.height;
+				var firstHalfWidth = (rectangle.width * firstHalfSum / sum);
+		
+				var secondHalfHeight = rectangle.height;
+				var secondHalfWidth = (rectangle.width * secondHalfSum / sum); 
+
+
+				var firstHalfRectangle = new Object();				
+				firstHalfRectangle.value = firstHalfSum;
+				firstHalfRectangle.x = rectangle.x;
+				firstHalfRectangle.y = rectangle.y;
+				firstHalfRectangle.width = firstHalfWidth;
+				firstHalfRectangle.height = firstHalfHeight;
+				
+				var secondHalfRectangle = new Object();
+				secondHalfRectangle.value = secondHalfSum;
+				secondHalfRectangle.x = rectangle.x + firstHalfWidth;
+				secondHalfRectangle.y = rectangle.y;
+				secondHalfRectangle.width = secondHalfWidth;
+				secondHalfRectangle.height = secondHalfHeight;
+			
+				splitRectangle(svg, firstHalfRectangle, firstHalf, evenLevel);
+				splitRectangle(svg, secondHalfRectangle, secondHalf, evenLevel);
+			}
+
+			
+		}
+
+
+		function get_random_color() {
+    			var letters = '0123456789ABCDEF'.split('');
+    			var color = '#';
+    			for (var i = 0; i < 6; i++ ) {
+        			color += letters[Math.round(Math.random() * 15)];
+    			}
+    			return color;
+		}
+		
+			
+		$(document).ready(function () { 
+		
+		});
+
+
+	
+	</script> 
+	</head>	
+	<body>	
+		<h2>Packing rectangles into squares.</h2>
+		<h3>This example draws a square which indicates the total sum of a series of values. 
+		<br/>
+		Then it renders a rectangle inside a square for each value in the series.</h3>
+	
+		<div>	Enter scale
+			<input type='textbox' id = 'txtScale'></input>
+			<br/>
+			Enter a series of numbers in comma separated values:
+			<input type='textbox' id = 'txtBreakdown'></input>
+			<br/>
+			<input type='button' id='btnSubmit' text='Submit' value='Submit' onclick='submit();'></input>	
+		</div>
+		<br/>
+		<div id='drawing'>
+		</div>
+
+</body>
+</html>
+
+
+
